@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#1D9E75">
+<meta name="description" content="Shared household chore tracker">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Chores">
+<title>Chores</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/tabler-icons.min.css">
+<style>
+  :root {
+    --green: #1D9E75;
+    --green-light: #E1F5EE;
+    --green-dark: #0F6E56;
+    --bg: #ffffff;
+    --bg2: #f5f5f4;
+    --bg3: #eeede9;
+    --text: #1a1a18;
+    --text2: #6b6b67;
+    --text3: #9b9b97;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a;
+      --bg2: #262624;
+      --bg3: #313130;
+      --text: #f0f0ee;
+      --text2: #a0a09c;
+      --text3: #6b6b67;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; }
+  .app { max-width: 480px; margin: 0 auto; padding: 1.25rem 1rem 5rem; }
+  .top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+  .app-title { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+  .top-actions { display: flex; gap: 8px; align-items: center; }
+  .icon-btn { background: none; border: 0.5px solid var(--border2); border-radius: var(--radius); padding: 7px 12px; cursor: pointer; font-size: 13px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+  .icon-btn:hover { background: var(--bg2); }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; cursor: pointer; border: 0.5px solid var(--border); flex-shrink: 0; }
+  .tabs { display: flex; gap: 4px; margin-bottom: 1.25rem; background: var(--bg2); border-radius: var(--radius-lg); padding: 4px; }
+  .tab { flex: 1; padding: 9px 4px; border: none; background: none; cursor: pointer; font-size: 13px; font-weight: 400; color: var(--text2); border-radius: var(--radius); transition: all .15s; }
+  .tab.active { background: var(--bg); color: var(--text); font-weight: 500; border: 0.5px solid var(--border); }
+  .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 1.25rem; }
+  .stat { background: var(--bg2); border-radius: var(--radius); padding: 10px 12px; text-align: center; }
+  .stat-num { font-size: 20px; font-weight: 600; }
+  .stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .progress-label { font-size: 13px; color: var(--text2); margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .progress-label span:last-child { font-size: 11px; color: var(--text3); }
+  .progress-bar-wrap { background: var(--bg2); border-radius: 99px; height: 6px; margin-bottom: 1.5rem; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 99px; background: var(--green); transition: width .3s; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .section-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text3); }
+  .add-btn { background: none; border: none; cursor: pointer; color: var(--text2); font-size: 13px; display: flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: var(--radius); }
+  .add-btn:hover { color: var(--text); background: var(--bg2); }
+  .chore-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1.5rem; }
+  .chore-item { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 0.5px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); cursor: pointer; transition: all .15s; user-select: none; }
+  .chore-item:hover { border-color: var(--border2); }
+  .chore-item:active { transform: scale(0.99); }
+  .chore-item.done { opacity: .55; }
+  .chore-item.done .chore-name { text-decoration: line-through; color: var(--text3); }
+  .check-circle { width: 23px; height: 23px; border-radius: 50%; border: 1.5px solid var(--border2); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .chore-item.done .check-circle { background: var(--green); border-color: var(--green); }
+  .check-circle i { font-size: 13px; color: #fff; opacity: 0; }
+  .chore-item.done .check-circle i { opacity: 1; }
+  .chore-name { flex: 1; font-size: 15px; }
+  .chore-meta { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .mini-avatar { width: 20px; height: 20px; border-radius: 50%; font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .delete-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 17px; padding: 2px; border-radius: 4px; opacity: 0; transition: opacity .15s; }
+  .chore-item:hover .delete-btn { opacity: 1; }
+  .delete-btn:hover { color: #E24B4A; }
+  .add-form { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .add-form input { flex: 1; padding: 9px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 15px; }
+  .add-form input:focus { outline: 2px solid var(--green); outline-offset: -1px; }
+  .add-form button { padding: 9px 14px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); cursor: pointer; color: var(--text); font-size: 14px; }
+  .add-form button:hover { background: var(--bg2); }
+  .empty { font-size: 14px; color: var(--text3); padding: 28px; text-align: center; border: 0.5px dashed var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; line-height: 1.6; }
+  .sync-bar { font-size: 12px; color: var(--text3); text-align: center; padding-bottom: 8px; min-height: 24px; transition: opacity .3s; }
+
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: flex-end; justify-content: center; z-index: 100; padding: 0; }
+  @media (min-width: 480px) { .modal-overlay { align-items: center; } }
+  .modal { background: var(--bg); border-radius: var(--radius-lg) var(--radius-lg) 0 0; padding: 1.5rem 1.25rem 2rem; width: 100%; max-width: 480px; }
+  @media (min-width: 480px) { .modal { border-radius: var(--radius-lg); padding: 1.5rem 1.25rem; } }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: .75rem; }
+  .modal p { font-size: 14px; color: var(--text2); margin-bottom: .75rem; line-height: 1.5; }
+  .modal label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input[type=text], .modal select { width: 100%; padding: 10px 12px; border: 0.5px solid var(--border2); border-radius: var(--radius); background: var(--bg); color: var(--text); font-size: 15px; }
+  .modal input[type=text]:focus, .modal select:focus { outline: 2px solid var(--green); outline-offset: -1px; }
+  .modal-btns { display: flex; gap: 8px; margin-top: 1.25rem; }
+  .modal-btns button { flex: 1; padding: 11px; border: 0.5px solid var(--border2); border-radius: var(--radius); cursor: pointer; font-size: 15px; background: var(--bg); color: var(--text); font-weight: 500; }
+  .modal-btns .save-btn { background: var(--green); color: #fff; border-color: var(--green); }
+  .modal-btns button:hover { opacity: .85; }
+  .hint { font-size: 12px; color: var(--text3); margin-top: 6px; line-height: 1.5; }
+  .member-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .member-chip { display: flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 99px; border: 0.5px solid var(--border); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top-bar">
+    <span class="app-title">🏠 Chores</span>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="openSettings()"><i class="ti ti-settings"></i></button>
+      <button class="icon-btn" onclick="syncAndRender()" title="Sync"><i class="ti ti-refresh"></i></button>
+      <div class="avatar" id="my-avatar" onclick="openProfile()" title="My profile" style="background:#E1F5EE;color:#0F6E56">?</div>
+    </div>
+  </div>
+  <div id="sync-status" class="sync-bar"></div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('daily',this)"><i class="ti ti-sun"></i> Daily</button>
+    <button class="tab" onclick="switchTab('weekly',this)"><i class="ti ti-calendar-week"></i> Weekly</button>
+    <button class="tab" onclick="switchTab('monthly',this)"><i class="ti ti-calendar-month"></i> Monthly</button>
+  </div>
+  <div id="tab-content"></div>
+</div>
+
+<script>
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const COLORS=[
+  {bg:'#E1F5EE',fg:'#0F6E56'},{bg:'#E6F1FB',fg:'#185FA5'},{bg:'#FAECE7',fg:'#993C1D'},
+  {bg:'#FBEAF0',fg:'#993556'},{bg:'#EEEDFE',fg:'#3C3489'},{bg:'#FAEEDA',fg:'#854F0B'},
+  {bg:'#EAF3DE',fg:'#3B6D11'},{bg:'#F1EFE8',fg:'#5F5E5A'}
+];
+
+const DB_KEY = 'household-chores-v2';
+
+const state={
+  tab:'daily',
+  myId:null, myName:null,
+  settings:{weekStart:1},
+  chores:{daily:[],weekly:[],monthly:[]},
+  checked:{daily:{},weekly:{},monthly:{}},
+  members:{},
+  lastReset:{daily:null,weekly:null,monthly:null},
+  addingFor:null
+};
+
+// ─── Storage (localStorage fallback) ───────────────────────────
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+// ─── Shared storage via Firebase (free tier) ───────────────────
+// Using localStorage only — for a real shared backend swap in Firebase here.
+// Each household member opens the same URL; in this standalone version
+// data is shared per-device. For true cross-device sharing, see README.
+
+function sharedLoad(){
+  const raw=lsGet(DB_KEY);
+  if(!raw)return;
+  try{
+    const d=JSON.parse(raw);
+    if(d.settings)state.settings=d.settings;
+    if(d.chores)state.chores=d.chores;
+    if(d.checked)state.checked=d.checked;
+    if(d.members)state.members=d.members;
+    if(d.lastReset)state.lastReset=d.lastReset;
+  }catch(e){}
+}
+
+function sharedSave(){
+  lsSet(DB_KEY,JSON.stringify({
+    settings:state.settings,chores:state.chores,
+    checked:state.checked,members:state.members,lastReset:state.lastReset
+  }));
+  setSyncStatus('Saved ✓');
+}
+
+function localLoad(){
+  const raw=lsGet('my-chore-profile-v2');
+  if(!raw)return;
+  try{const d=JSON.parse(raw);state.myId=d.id;state.myName=d.name;}catch(e){}
+}
+
+function localSave(){
+  lsSet('my-chore-profile-v2',JSON.stringify({id:state.myId,name:state.myName}));
+}
+
+// ─── Date helpers ───────────────────────────────────────────────
+function todayKey(){const d=new Date();return`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`}
+function weekKey(){
+  const now=new Date(),day=now.getDay(),ws=state.settings.weekStart;
+  const diff=(day-ws+7)%7,m=new Date(now);
+  m.setDate(now.getDate()-diff);
+  return`${m.getFullYear()}-${m.getMonth()}-${m.getDate()}`;
+}
+function monthKey(){const d=new Date();return`${d.getFullYear()}-${d.getMonth()}`}
+
+function checkResets(){
+  const tk=todayKey(),wk=weekKey(),mk=monthKey();
+  let changed=false;
+  if(state.lastReset.daily!==tk){state.checked.daily={};state.lastReset.daily=tk;changed=true;}
+  if(state.lastReset.weekly!==wk){state.checked.weekly={};state.lastReset.weekly=wk;changed=true;}
+  if(state.lastReset.monthly!==mk){state.checked.monthly={};state.lastReset.monthly=mk;changed=true;}
+  if(changed)sharedSave();
+}
+
+// ─── Helpers ────────────────────────────────────────────────────
+function initials(n){if(!n)return'?';const p=n.trim().split(' ');return(p.length>1?p[0][0]+p[p.length-1][0]:n.slice(0,2)).toUpperCase()}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function colorFor(id){const ids=Object.keys(state.members).sort();const i=ids.indexOf(id);return COLORS[Math.max(0,i)%COLORS.length]}
+function setSyncStatus(msg){const el=document.getElementById('sync-status');if(el){el.textContent=msg;setTimeout(()=>{if(el)el.textContent=''},2500);}}
+
+function updateMyAvatar(){
+  const av=document.getElementById('my-avatar');
+  if(!av||!state.myId)return;
+  const c=colorFor(state.myId);
+  av.style.background=c.bg;av.style.color=c.fg;
+  av.textContent=initials(state.myName);
+}
+
+// ─── Actions ────────────────────────────────────────────────────
+function toggleChore(type,id){
+  if(!state.myId){openProfile();return;}
+  if(!state.checked[type])state.checked[type]={};
+  if(state.checked[type][id]){delete state.checked[type][id];}
+  else{state.checked[type][id]={by:state.myId,name:state.myName,at:Date.now()};}
+  sharedSave();renderContent();
+}
+
+function addChore(type){
+  const inp=document.getElementById('new-chore-input');
+  const name=inp?inp.value.trim():'';
+  if(!name)return;
+  state.chores[type].push({id:Date.now().toString(),name,addedBy:state.myId});
+  state.addingFor=null;
+  sharedSave();renderContent();
+}
+
+function deleteChore(type,id,e){
+  e.stopPropagation();
+  if(!confirm('Delete this chore?'))return;
+  state.chores[type]=state.chores[type].filter(c=>c.id!==id);
+  delete(state.checked[type]||{})[id];
+  sharedSave();renderContent();
+}
+
+function switchTab(tab,el){
+  state.tab=tab;state.addingFor=null;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');renderContent();
+}
+
+function startAdd(type){state.addingFor=state.addingFor===type?null:type;renderContent();}
+
+function syncAndRender(){
+  setSyncStatus('Syncing…');
+  sharedLoad();checkResets();updateMyAvatar();renderContent();
+  setSyncStatus('Up to date ✓');
+}
+
+// ─── Modals ─────────────────────────────────────────────────────
+function closeModal(){document.getElementById('modal-host')?.remove();}
+
+function openModal(html){
+  document.getElementById('modal-host')?.remove();
+  const div=document.createElement('div');
+  div.className='modal-overlay';div.id='modal-host';
+  div.innerHTML=`<div class="modal">${html}</div>`;
+  div.addEventListener('click',e=>{if(e.target===div)closeModal();});
+  document.body.appendChild(div);
+  setTimeout(()=>div.querySelector('input')?.focus(),60);
+}
+
+function openProfile(){
+  const isNew=!state.myId;
+  openModal(`
+    <h3>${isNew?'Welcome! Who are you?':'Your profile'}</h3>
+    ${isNew?'<p>Enter your name so your household knows who completed each chore.</p>':''}
+    <label>Your name</label>
+    <input type="text" id="profile-name-inp" value="${esc(state.myName||'')}" placeholder="e.g. Alex" maxlength="30"
+      onkeydown="if(event.key==='Enter')saveProfile()">
+    ${!isNew?`<div style="margin-top:14px"><p class="hint">Household members:</p>
+      <div class="member-chips">${Object.values(state.members).map(m=>{
+        const c=colorFor(Object.keys(state.members).find(k=>state.members[k].name===m.name)||'');
+        return`<div class="member-chip"><div class="mini-avatar" style="background:${c.bg};color:${c.fg}">${initials(m.name)}</div>${esc(m.name)}</div>`;
+      }).join('')}</div></div>`:''}
+    <div class="modal-btns">
+      ${!isNew?'<button onclick="closeModal()">Cancel</button>':''}
+      <button class="save-btn" onclick="saveProfile()">${isNew?'Get started':'Save'}</button>
+    </div>`);
+}
+
+function openSettings(){
+  openModal(`
+    <h3>Settings</h3>
+    <label>Week starts on</label>
+    <select id="week-start-sel">${DAYS.map((d,i)=>`<option value="${i}"${state.settings.weekStart===i?' selected':''}>${d}</option>`).join('')}</select>
+    <p class="hint" style="margin-top:8px">Weekly chores reset on this day each week.</p>
+    <div class="modal-btns">
+      <button onclick="closeModal()">Cancel</button>
+      <button class="save-btn" onclick="saveSettings()">Save</button>
+    </div>`);
+}
+
+function saveProfile(){
+  const inp=document.getElementById('profile-name-inp');
+  const name=inp?inp.value.trim():'';
+  if(!name){inp?.focus();return;}
+  if(!state.myId)state.myId='u'+Date.now();
+  state.myName=name;
+  state.members[state.myId]={name};
+  localSave();sharedSave();closeModal();updateMyAvatar();renderContent();
+}
+
+function saveSettings(){
+  const sel=document.getElementById('week-start-sel');
+  state.settings.weekStart=parseInt(sel.value);
+  state.lastReset.weekly=null;
+  checkResets();sharedSave();closeModal();renderContent();
+}
+
+// ─── Render ─────────────────────────────────────────────────────
+function renderContent(){
+  const tc=document.getElementById('tab-content');if(!tc)return;
+  const type=state.tab;
+  const chores=state.chores[type]||[];
+  const checked=state.checked[type]||{};
+  const done=chores.filter(c=>checked[c.id]).length;
+  const total=chores.length;
+  const pct=total?Math.round((done/total)*100):0;
+  const nextReset=type==='daily'?'Resets at midnight':type==='weekly'?`Resets on ${DAYS[state.settings.weekStart]}`:'Resets on 1st of month';
+
+  let html=`<div class="stat-row">
+    <div class="stat"><div class="stat-num">${done}</div><div class="stat-lbl">Done</div></div>
+    <div class="stat"><div class="stat-num">${total-done}</div><div class="stat-lbl">Left</div></div>
+    <div class="stat"><div class="stat-num">${pct}%</div><div class="stat-lbl">Complete</div></div>
+  </div>
+  <div class="progress-label"><span>${done} of ${total} done</span><span>${nextReset}</span></div>
+  <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+  <div class="section-header">
+    <span class="section-label">${type} chores</span>
+    <button class="add-btn" onclick="startAdd('${type}')"><i class="ti ti-plus"></i> Add chore</button>
+  </div>`;
+
+  if(state.addingFor===type){
+    html+=`<div class="add-form">
+      <input id="new-chore-input" type="text" placeholder="Chore name…" maxlength="60"
+        onkeydown="if(event.key==='Enter')addChore('${type}');if(event.key==='Escape'){state.addingFor=null;renderContent()}">
+      <button onclick="addChore('${type}')">Add</button>
+    </div>`;
+  }
+
+  if(!chores.length&&state.addingFor!==type){
+    html+=`<div class="empty">No ${type} chores yet.<br>Tap <strong>Add chore</strong> to get started.</div>`;
+  }else{
+    html+=`<div class="chore-list">`;
+    const sorted=[...chores].sort((a,b)=>(checked[a.id]?1:0)-(checked[b.id]?1:0));
+    for(const c of sorted){
+      const entry=checked[c.id];
+      const isDone=!!entry;
+      let avatarHtml='';
+      if(isDone&&entry.by){
+        const col=colorFor(entry.by);
+        avatarHtml=`<div class="mini-avatar" style="background:${col.bg};color:${col.fg}" title="${esc(entry.name||'')}">${initials(entry.name)}</div>`;
+      }
+      html+=`<div class="chore-item${isDone?' done':''}" onclick="toggleChore('${type}','${c.id}')">
+        <div class="check-circle"><i class="ti ti-check"></i></div>
+        <span class="chore-name">${esc(c.name)}</span>
+        <div class="chore-meta">${avatarHtml}<button class="delete-btn" aria-label="Delete" onclick="deleteChore('${type}','${c.id}',event)"><i class="ti ti-trash"></i></button></div>
+      </div>`;
+    }
+    html+=`</div>`;
+  }
+  tc.innerHTML=html;
+  if(state.addingFor===type)setTimeout(()=>document.getElementById('new-chore-input')?.focus(),30);
+}
+
+// ─── Init ────────────────────────────────────────────────────────
+localLoad();sharedLoad();checkResets();
+if(!state.myId){openProfile();}
+else{if(state.myName&&!state.members[state.myId]){state.members[state.myId]={name:state.myName};sharedSave();}updateMyAvatar();}
+renderContent();
+</script>
+</body>
+</html>
